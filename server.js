@@ -43,7 +43,7 @@ client.on('ready', () => {
 });
 
 app.get('/', (req, res) => {
-    res.send("Hello World!");
+    res.send("Hello World Update!");
 })
 
 app.post('/sendmessage/:phone', async (req,res) => {
