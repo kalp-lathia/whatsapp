@@ -80,6 +80,9 @@ app.use(function(req, res, next){
     console.log(req.method + ' : ' + req.path);
     next();
 });
+app.get('/', (req, res) => {
+    res.send("Hello World");
+})
 app.use('/chat',chatRoute);
 app.use('/group',groupRoute);
 app.use('/auth',authRoute);
