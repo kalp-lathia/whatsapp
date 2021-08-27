@@ -42,6 +42,10 @@ client.on('ready', () => {
     console.log('Client is ready!');
 });
 
+app.get('/', (req, res) => {
+    res.send("Hello World!");
+})
+
 app.post('/sendmessage/:phone', async (req,res) => {
     let phone = req.params.phone;
     let message = req.body.message;
