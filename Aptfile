@@ -7,3 +7,4 @@ libgtk-3-0 libgbm-dev
 libnss3-dev 
 libxss-dev
 libasound2
+libxshmfence.so

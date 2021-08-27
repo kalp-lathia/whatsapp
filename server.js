@@ -18,6 +18,7 @@ global.client = new Client({
             '--disable-setuid-sandbox',
             '--unhandled-rejections=strict'
         ],
+        ignoreDefaultArgs: ['--disable-extensions']
     },
     session: sessionCfg
 });
