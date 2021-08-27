@@ -6,4 +6,4 @@ libgdk-pixbuf2.0-0
 libgtk-3-0 libgbm-dev 
 libnss3-dev 
 libxss-dev
-libasound.so.2
+libasound2
