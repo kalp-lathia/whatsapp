@@ -2,70 +2,89 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const fs = require('fs');
 
+const { Client } = require('whatsapp-web.js');
+const SESSION_FILE_PATH = './session.json';
+
+let sessionCfg;
+if (fs.existsSync(SESSION_FILE_PATH)) {
+    sessionCfg = require(SESSION_FILE_PATH);
+}
+
+global.client = new Client({
+    puppeteer: {
+        headless: true,
+        args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--unhandled-rejections=strict'
+        ],
+    },
+    session: sessionCfg
+});
+
+global.authed = false;
+
 const app = express();
 
+const port = process.env.PORT || 5001;
+//Set Request Size Limit 50 MB
 app.use(bodyParser.json({ limit: '50mb' }));
+
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Path where the session data will be stored
-const SESSION_FILE_PATH = './session.json';
-
-// Load the session data if it has been previously saved
-let sessionData;
-if(fs.existsSync(SESSION_FILE_PATH)) {
-    sessionData = require(SESSION_FILE_PATH);
-}
-
-const { Client } = require('whatsapp-web.js');
-const client = new Client({
-    session: sessionData // saved session object
-});
-
-const qrcode = require('qrcode-terminal');
-
 client.on('qr', qr => {
-    qrcode.generate(qr, {small: true});
+    fs.writeFileSync('./components/last.qr', qr);
 });
 
-client.on('authenticated', (session) => {    
-    console.log('Client is Authenticated!');
-    sessionData = session;
-    fs.writeFile(SESSION_FILE_PATH, JSON.stringify(session), (err) => {
+
+client.on('authenticated', (session) => {
+    console.log("AUTH!");
+    sessionCfg = session;
+
+    fs.writeFile(SESSION_FILE_PATH, JSON.stringify(session), function (err) {
         if (err) {
             console.error(err);
         }
+        authed = true;
     });
+
+    try {
+        fs.unlinkSync('./components/last.qr')
+    } catch(err) {}
+});
+
+client.on('auth_failure', () => {
+    console.log("AUTH Failed !")
+    sessionCfg = ""
+    process.exit()
 });
 
 client.on('ready', () => {
     console.log('Client is ready!');
 });
 
-app.get('/', (req, res) => {
-    res.send("Hello World Update!");
-})
-
-app.post('/sendmessage/:phone', async (req,res) => {
-    let phone = req.params.phone;
-    let message = req.body.message;
-    console.log(phone, message)
-    if (phone == undefined || message == undefined) {
-        res.send({ status:"error", message:"please enter valid phone and message" })
-    } else {
-        client.sendMessage(phone + '@c.us', message).then((response) => {
-            if (response.id.fromMe) {
-                res.send({ status:'success', message: `Message successfully sent to ${phone}` })
-            }
-        }).catch(err => {
-            console.log("inside error",  err)
-            res.send({ status:'failure', message: `Session not active` })
-        })
+client.on('message', msg => {
+    if (config.webhook.enabled) {
+        axios.post(config.webhook.path, { msg })
     }
+})
+client.initialize()
+
+const chatRoute = require('./components/chatting');
+const groupRoute = require('./components/group');
+const authRoute = require('./components/auth');
+const contactRoute = require('./components/contact');
+
+app.use(function(req, res, next){
+    console.log(req.method + ' : ' + req.path);
+    next();
 });
+app.use('/chat',chatRoute);
+app.use('/group',groupRoute);
+app.use('/auth',authRoute);
+app.use('/contact',contactRoute);
 
-client.initialize();
-
-app.listen(process.env.PORT || 4545, () => {
-    console.log("Server Running Live on Port : 4545");
+app.listen(port, () => {
+    console.log("Server Running Live on Port : " + port);
 });
