@@ -38,7 +38,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 client.on('qr', qr => {
     localStorage.setItem('qr', qr);
-    console.log("qr set ----->    ", qr)
+    console.log("qr set ----->  ", qr)
 });
 
 client.on('authenticated', (session) => {
