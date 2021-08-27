@@ -37,7 +37,6 @@ client.on('qr', qr => {
     fs.writeFileSync('./components/last.qr', qr);
 });
 
-
 client.on('authenticated', (session) => {
     console.log("AUTH!");
     sessionCfg = session;
