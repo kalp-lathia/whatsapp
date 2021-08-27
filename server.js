@@ -8,8 +8,7 @@ localStorage = new LocalStorage('./scratch');
 
 let sessionCfg;
 if (localStorage.getItem('session')) {
-    // sessionCfg = JSON.parse(localStorage.getItem('session'))
-    sessionCfg = {}
+    sessionCfg = JSON.parse(localStorage.getItem('session'))
     console.log("sessionCfg ---->    ", sessionCfg)
 }
 
