@@ -1,13 +1,15 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-const fs = require('fs');
 
 const { Client } = require('whatsapp-web.js');
-const SESSION_FILE_PATH = './session.json';
+
+var LocalStorage = require('node-localstorage').LocalStorage,
+localStorage = new LocalStorage('./scratch');
 
 let sessionCfg;
-if (fs.existsSync(SESSION_FILE_PATH)) {
-    sessionCfg = require(SESSION_FILE_PATH);
+if (localStorage.getItem('session')) {
+    sessionCfg = JSON.parse(localStorage.getItem('session'))
+    console.log("sessionCfg ---->    ", sessionCfg)
 }
 
 global.client = new Client({
@@ -35,23 +37,15 @@ app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 client.on('qr', qr => {
-    fs.writeFileSync('./components/last.qr', qr);
+    localStorage.setItem('qr', qr);
+    console.log("qr set ----->    ", qr)
 });
 
 client.on('authenticated', (session) => {
-    console.log("AUTH!");
     sessionCfg = session;
-
-    fs.writeFile(SESSION_FILE_PATH, JSON.stringify(session), function (err) {
-        if (err) {
-            console.error(err);
-        }
-        authed = true;
-    });
-
-    try {
-        fs.unlinkSync('./components/last.qr')
-    } catch(err) {}
+    localStorage.setItem('session', JSON.stringify(session))
+    authed = true;
+    localStorage.removeItem('qr');
 });
 
 client.on('auth_failure', () => {
@@ -77,7 +71,7 @@ const authRoute = require('./components/auth');
 const contactRoute = require('./components/contact');
 
 app.use(function(req, res, next){
-    console.log(req.method + ' : ' + req.path);
+    // console.log(req.method + ' : ' + req.path);
     next();
 });
 app.get('/', (req, res) => {
