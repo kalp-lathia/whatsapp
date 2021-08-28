@@ -33,8 +33,8 @@ const port = process.env.PORT || 5001;
 //Set Request Size Limit 50 MB
 app.use(bodyParser.json({ limit: '50mb' }));
 
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.json());
-app.use(bodyParser.urlencoded({ extended: true }));
 
 client.on('qr', qr => {
     localStorage.setItem('qr', qr);
