@@ -41,6 +41,16 @@ client.on('qr', qr => {
     console.log("qr set ----->  ", qr)
 });
 
+client.on('disconnected', reason => {
+    console.log(reason)
+    localStorage.removeItem('session');
+    client.on('qr', qr => {
+        localStorage.setItem('qr', qr);
+        console.log("qr set ----->  ", qr)
+    });
+    client.initialize();
+})
+
 client.on('authenticated', (session) => {
     sessionCfg = session;
     localStorage.setItem('session', JSON.stringify(session))
